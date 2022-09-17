@@ -16,6 +16,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"os"
+	"strconv"
 	"time"
 	"unsafe"
 )
@@ -189,7 +191,14 @@ func (f *Framebuffer) ResizeTo(width, height int, dst *Framebuffer) error {
 	if err != nil {
 		return err
 	}
-	C.opencv_mat_resize(f.mat, dst.mat, C.int(width), C.int(height), C.CV_INTER_AREA)
+
+	hardwareAcceleration := os.Getenv("RESIZE_HARDWARE_ACCELERATION")
+	if enabled, err := strconv.ParseUint(hardwareAcceleration, 10, 64); err != nil || enabled == 0 {
+		C.opencv_mat_resize(f.mat, dst.mat, C.int(width), C.int(height), C.CV_INTER_AREA, C.int(0))
+	} else {
+		C.opencv_mat_resize(f.mat, dst.mat, C.int(width), C.int(height), C.CV_INTER_AREA, C.int(1))
+	}
+
 	return nil
 }
 
@@ -244,7 +253,14 @@ func (f *Framebuffer) Fit(width, height int, dst *Framebuffer) error {
 	if err != nil {
 		return err
 	}
-	C.opencv_mat_resize(newMat, dst.mat, C.int(width), C.int(height), C.CV_INTER_AREA)
+
+	hardwareAcceleration := os.Getenv("RESIZE_HARDWARE_ACCELERATION")
+	if enabled, err := strconv.ParseUint(hardwareAcceleration, 10, 64); err != nil || enabled == 0 {
+		C.opencv_mat_resize(f.mat, dst.mat, C.int(width), C.int(height), C.CV_INTER_AREA, C.int(0))
+	} else {
+		C.opencv_mat_resize(f.mat, dst.mat, C.int(width), C.int(height), C.CV_INTER_AREA, C.int(1))
+	}
+
 	return nil
 }
 

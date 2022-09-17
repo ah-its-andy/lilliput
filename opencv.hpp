@@ -53,11 +53,13 @@ opencv_mat opencv_mat_create_from_data(int width,
 opencv_mat opencv_mat_create_empty_from_data(int length, void* data);
 bool opencv_mat_set_row_stride(opencv_mat mat, size_t stride);
 void opencv_mat_release(opencv_mat mat);
+// hardware_acceleration: 0 = none, 1 = cuda
 void opencv_mat_resize(const opencv_mat src,
                        opencv_mat dst,
                        int width,
                        int height,
-                       int interpolation);
+                       int interpolation,
+                       int hardware_acceleration);
 opencv_mat opencv_mat_crop(const opencv_mat src, int x, int y, int width, int height);
 void opencv_mat_orientation_transform(CVImageOrientation orientation, opencv_mat mat);
 int opencv_mat_get_width(const opencv_mat mat);

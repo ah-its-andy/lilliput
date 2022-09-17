@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/cudawarping.hpp>
+#include "opencv2/cudaimgproc.hpp"
 
 opencv_mat opencv_mat_create(int width, int height, int type)
 {
@@ -167,14 +169,24 @@ void opencv_mat_resize(const opencv_mat src,
                        opencv_mat dst,
                        int width,
                        int height,
-                       int interpolation)
+                       int interpolation,
+                       int hardware_acceleration)
 {
-    cv::resize(*static_cast<const cv::Mat*>(src),
-               *static_cast<cv::Mat*>(dst),
-               cv::Size(width, height),
-               0,
-               0,
-               interpolation);
+    if (hardware_acceleration == 0) {
+        cv::resize(*static_cast<const cv::Mat*>(src),
+                *static_cast<cv::Mat*>(dst),
+                cv::Size(width, height),
+                0,
+                0,
+                interpolation);
+    } else {
+        cv::cuda::GpuMat gpuInImage;
+        cv::cuda::GpuMat gpuOutImage;
+
+        gpuInImage.upload(*static_cast<const cv::Mat*>(src));
+        cv::cuda::resize(gpuInImage, gpuOutImage, cv::Size(width, height));
+        gpuOutImage.download(*static_cast<cv::Mat*>(dst));
+    }
 }
 
 opencv_mat opencv_mat_crop(const opencv_mat src, int x, int y, int width, int height)
